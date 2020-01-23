@@ -12,9 +12,12 @@ class GooglePlacesInterface:
         self.details_fields = details_fields
 
     def filter_by_type(self, place):
+        """Returns False if any of a place's types are in the configured type blacklist, False otherwise."""
         return self.type_blacklist.isdisjoint(set(place['types']))
 
     def search_from_lat_long(self, location, radius=None, auto_filter_types=True):
+        """Searches the google places API starting at the location provided. Filters results using the configured
+            type blacklist by default."""
         endpoint_url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json"
         params = {
             'location': location,
@@ -38,6 +41,7 @@ class GooglePlacesInterface:
             return places
 
     def get_place_details(self, place_id):
+        """Returns a dictionary of a place's details"""
         endpoint_url = "https://maps.googleapis.com/maps/api/place/details/json"
         params = {
             'placeid': place_id,
@@ -49,6 +53,8 @@ class GooglePlacesInterface:
         return place_details
 
     def filtered_search(self, location):
+        """Performs a search from the given location, filters using the type blacklist, and returns a list dicts
+            representing the places' information"""
         search_results = [self.get_place_details(p['place_id']) for p in self.search_from_lat_long(location)]
         return search_results
 
@@ -67,24 +73,28 @@ class DatabaseInterface:
 
     @property
     def count(self):
-        return self.collection.count_documents()
+        return self.collection.estimated_document_count()
 
     def add(self, docs):
+        """Adds the docs to the database and to the archive"""
         if type(docs) is not list:
             docs = [docs]
         self.collection.insert_many(docs)
         self.collection_archive.insert_many(docs)
 
-    def retrieve_next(self, num_to_retrieve):
+    def retrieve_next(self, n=1):
+        """Retrieves the next [n] oldest documents from the database (functions as a queue)."""
         sort = {'_id': -1}
-        search = self.collection.find({}, limit=num_to_retrieve).sort(sort)
+        search = self.collection.find({}, limit=n).sort(sort)
         return search
 
     def remove(self, ids):
+        """Removes the specified IDs from the database"""
         if type(ids) is not list:
             ids = [ids]
         object_ids = [ObjectId(id) for id in ids]
         self.collection.delete_many({'_id': {'$in': object_ids}})
+
 
 if __name__ == '__main__':
     from config import GOOGLE_PLACES, MONGODB

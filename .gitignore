@@ -3,3 +3,6 @@ __pycache__/
 venv/
 config.py
 geckodriver.log
+testing_stuff.py
+chromedriver.exe
+LatLong.json
