@@ -61,7 +61,8 @@ class GooglePlacesInterface:
     def filtered_search(self, location):
         """Performs a search from the given location, filters using the type blacklist, and returns a list dicts
             representing the places' information"""
-        search_results = [self.get_place_details(p['place_id']) for p in self.search_from_lat_long(location)]
+        location_string = '{}, {}'.format(*location)
+        search_results = [self.get_place_details(p['place_id']) for p in self.search_from_lat_long(location_string)]
         return search_results
 
 
