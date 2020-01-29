@@ -110,6 +110,6 @@ if __name__ == '__main__':
     from config import GOOGLE_PLACES, MONGODB
     g = GooglePlacesInterface(**GOOGLE_PLACES)
     db = DatabaseInterface(**MONGODB)
-    p = g.filtered_search(location='41.138257, -73.297804')  # Downtown Westport
+    p = g.filtered_search(location=(41.026531, -73.62854))  # Downtown Westport
     print(len(p))
     print(db)
