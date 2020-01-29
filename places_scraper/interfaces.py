@@ -4,6 +4,10 @@ import pymongo
 from bson.objectid import ObjectId
 
 
+class PlacesApiSearchError(Exception):
+    pass
+
+
 class GooglePlacesInterface:
     def __init__(self, api_key: str, search_radius: int, type_blacklist: list, details_fields: list):
         self.api_key = api_key
@@ -26,6 +30,8 @@ class GooglePlacesInterface:
         }
         res = requests.get(endpoint_url, params=params)
         results = res.json()
+        if not results.get('results'):
+            raise PlacesApiSearchError(f'Search returned {results}')
         places = []
         places.extend(results['results'])
         time.sleep(2)
@@ -77,15 +83,18 @@ class DatabaseInterface:
 
     def add(self, docs):
         """Adds the docs to the database and to the archive"""
-        if type(docs) is not list:
+        if not docs:  # Attempting to add an empty list throws errors, so we exit early
+            return False
+        if not isinstance(docs, list):
             docs = [docs]
         self.collection.insert_many(docs)
         self.collection_archive.insert_many(docs)
+        return True
 
     def retrieve_next(self, n=1):
         """Retrieves the next [n] oldest documents from the database (functions as a queue)."""
-        sort = {'_id': -1}
-        search = self.collection.find({}, limit=n).sort(sort)
+        sort = [('_id', -1)]
+        search = self.collection.find(limit=n).sort(sort)
         return search
 
     def remove(self, ids):
