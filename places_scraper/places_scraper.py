@@ -33,8 +33,11 @@ class PlacesScraper:
 
     def places_website_in_archive(self, place: dict):
         """Returns True if the place's website is in the archive database, False otherwise"""
-        database_search = self.database.collection_archive.find({'website': place['website']}, limit=2)
-        return bool(database_search.count())
+        if not place.get('website'):
+            return False  # For now, places without a website are ignored.
+        base_site = place['website'][8:].split('/')[0]
+        database_search = self.database.collection_archive.find({'website': {'$regex': base_site}}, limit=2)
+        return not bool(database_search.count())
 
     def doc_count_watcher(self):
         """Checks the size of the database and if there are less items than the specified minimum, performs and processes
