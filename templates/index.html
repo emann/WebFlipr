@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WebFlipr</title>
+    <link rel="stylesheet" href="{{url_for('static', filename='css/index.css')}}">
+</head>
+<body>
+    <div id="business-info" class="flex-container">
+        <h1>{{place_info['name']}}</h1>
+        <h3>{{place_info['formatted_address']}}</h3>
+    </div>
+    <div id="website-display" class="flex-container">
+        <a href={{place_info['website']}}>
+            <img alt='Failed to take a screenshot' src={{place_info['screenshot_url']}} width="1280" height="720">
+        </a>
+    </div>
+<script>
+    //The JS for capturing keypresses
+    document.addEventListener("keypress", function onPress(event) {
+        var rank = -1;
+        switch(event.key)
+        {
+            case "g":
+                rank = 2;
+                break;
+            case "f":
+                rank = 1;
+                break;
+            case "j":
+                rank = 0;
+                break;
+            default:
+                break;
+        }
+        if (rank !== -1)
+        {
+            console.log("{{place_info['_id']}}");
+            var redirect_url = window.location.href + "?rank=" + rank + "&id=" + "{{place_info['_id']}}";
+            window.location.replace(redirect_url);
+        }
+    });
+</script>
+</body>
+</html>
